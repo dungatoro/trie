@@ -25,21 +25,20 @@ class Trie:
         return trie
 
     def layer(self): return [key for key in self.__dict if len(key) == 1]
-    def layers(self, string):
+    def counts(self, string):
         children = self.__dict 
         for letter in string:
             if letter not in children:
                 children = []
-                yield None # yield None for the rest of the letters
+                yield 0 # yield 0 for the rest of the letters
             else:
                 children = children[letter]
-                yield self.__from_dict(children) # yield the letter's tree
+                yield children["counts"]
 
     def __str_iter(self, string, not_in_func, after_func):
         children = self.__dict
         for letter in string:
             if letter not in children: 
-                print(string, letter)
                 return not_in_func(children) # return if letter not found
             children = children[letter]
         return after_func(children) # return after iteration
@@ -52,3 +51,5 @@ class Trie:
 
     def __len__(self): return self.__dict["counts"]
     def __repr__(self): return f"Trie{self.__dict}"
+
+
