@@ -1,6 +1,4 @@
 class Trie:
-    __dict = {"counts": 0}
-
     def append(self, string):
         self.__dict["counts"] += 1
         children = self.__dict # start at first layer of tree
@@ -18,6 +16,7 @@ class Trie:
         return self
 
     def __init__(self, strings=None):
+        self.__dict = {"counts": 0}
         if strings: self += strings
 
     def __from_dict(self, dictionary):
@@ -53,4 +52,3 @@ class Trie:
 
     def __len__(self): return self.__dict["counts"]
     def __repr__(self): return f"Trie{self.__dict}"
-
