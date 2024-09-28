@@ -1,55 +1,22 @@
 class Trie:
-    def append(self, string):
-        self.__dict["counts"] += 1
-        children = self.__dict # start at first layer of tree
-        for letter in string:
-            if letter not in children: 
-                children[letter] = {"counts": 1} # `letter` becomes a child node
-            else:
-                children[letter]["counts"] += 1 # update count
+    def __init__(self, *words): self.nodes, self.count = {}, 1; self += words
 
-            children = children[letter] # traverse to next layer
-        children["end"] = True # use to store end of a word
+    def append(self, word): 
+        curr = self
+        for i, letter in enumerate(word):
+            if letter not in curr.nodes:
+                curr.nodes[letter] = Trie(word[i+1:])
+                return
+            curr = curr.nodes[letter]; curr.count += 1
+        curr.end = True
 
-    def __add__(self, strings):
-        for string in strings: self.append(string)
+    def __add__(self, words):
+        for word in words: self.append(word)
         return self
 
-    def __init__(self, strings=None):
-        self.__dict = {"counts": 0}
-        if strings: self += strings
-
-    def __from_dict(self, dictionary):
-        trie = Trie([])
-        trie.__dict = dictionary
-        return trie
-
-    def layer(self): return [key for key in self.__dict if len(key) == 1]
-    def counts(self, string):
-        children = self.__dict 
-        for letter in string:
-            if letter not in children:
-                children = []
-                yield 0 # yield 0 for the rest of the letters
-            else:
-                children = children[letter]
-                yield children["counts"]
-
-    def __str_iter(self, string, not_in_func, after_func):
-        children = self.__dict
-        for letter in string:
-            if letter not in children: 
-                return not_in_func(children) # return if letter not found
-            children = children[letter]
-        return after_func(children) # return after iteration
-
-    def __contains__(self, string):
-        return self.__str_iter(string, lambda x: False, lambda x: "end" in x)
-
-    def suffixes(self, string):
-        return self.__str_iter(string, lambda x: None, lambda x: self.__from_dict(x))
-
-    def __len__(self): return self.__dict["counts"]
-    def __repr__(self): return f"Trie{self.__dict}"
-
-
+    def counts(self, word):
+        curr, end = self, False
+        for letter in word:
+            if end == True: yield 0
+            elif letter not in curr.nodes: end = True; yield 0
+            else: curr = curr.nodes[letter]; yield curr.count
