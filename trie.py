@@ -1,43 +1,8 @@
 class Trie:
-    """ 
-    The trie is represented via nested dictionaries, each character is a key to
-    a dictionary of the characters that can follow it, which this pattern 
-    repeating.
-
-    As only characters are used, other datatypes can store extra info. 
-    """
-    __dict = {}
-
-    def __init__(self, strings=None):
-        """ Initialise from list of strings """
-        if strings: 
-            self += strings
-
-    def __contains__(self, string):
-        """ Return whether word is `in` the tree """
-        children = self.__dict
-        for letter in string:
-            if letter not in children: 
-                return False
-            children = children[letter]
-        return "end" in children
-
-    def __call__(self, string):
-        self.__search_string = string
-        return self
-
-    def __iter__(self):
-        """ Iterates over a string and returns the entire tree below """
-        children = self.__dict 
-        for letter in self.__search_string:
-            if letter not in children:
-                yield None
-            else:
-                children = children[letter]
-                yield self.__from_dict(children)
+    __dict = {"counts": 0}
 
     def append(self, string):
-        """ Add a single string to the trie """
+        self.__dict["counts"] += 1
         children = self.__dict # start at first layer of tree
         for letter in string:
             if letter not in children: 
@@ -49,34 +14,43 @@ class Trie:
         children["end"] = True # use to store end of a word
 
     def __add__(self, strings):
-        for string in strings:
-            self.append(string)
+        for string in strings: self.append(string)
         return self
+
+    def __init__(self, strings=None):
+        if strings: self += strings
 
     def __from_dict(self, dictionary):
         trie = Trie([])
         trie.__dict = dictionary
         return trie
 
-    def suffixes(self, string):
-        """ Find child nodes (suffixes) of a string """
+    def layer(self): return [key for key in self.__dict if len(key) == 1]
+    def layers(self, string):
+        children = self.__dict 
+        for letter in string:
+            if letter not in children:
+                children = []
+                yield None # yield None for the rest of the letters
+            else:
+                children = children[letter]
+                yield self.__from_dict(children) # yield the letter's tree
+
+    def __str_iter(self, string, not_in_func, after_func):
         children = self.__dict
         for letter in string:
             if letter not in children: 
-                return None
+                print(string, letter)
+                return not_in_func(children) # return if letter not found
             children = children[letter]
+        return after_func(children) # return after iteration
 
-        return self.__from_dict(children) # convert to trie to keep methods
+    def __contains__(self, string):
+        return self.__str_iter(string, lambda x: False, lambda x: "end" in x)
 
-    def __repr__(self):
-        return f"Trie{self.__dict}"
+    def suffixes(self, string):
+        return self.__str_iter(string, lambda x: None, lambda x: self.__from_dict(x))
 
-    def __len__(self):
-        return self.__dict.get("counts") or len(self.__dict) 
+    def __len__(self): return self.__dict["counts"]
+    def __repr__(self): return f"Trie{self.__dict}"
 
-trie = Trie()
-l = ["cat", "car", "cot", "comb", "combs", "dog", "dogs"]
-trie = Trie(l)
-
-for children in trie("cat"):
-    print( len(children))
