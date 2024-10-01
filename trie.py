@@ -5,7 +5,7 @@ class Trie:
         for word in words: self.append(word)
         return self
 
-    def __contains__(self, word, not_in_func, after_func):
+    def __contains__(self, word):
         nodes = self.__d
         for char in word:
             if char not in nodes: return False
